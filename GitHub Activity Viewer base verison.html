@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Activity Viewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header h1 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--dark);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--shadow);
+        }
+
+        .search-button {
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .activity-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .activity-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUpFade 0.5s ease-out forwards;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px var(--shadow);
+        }
+
+        .activity-type {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-details {
+            margin-bottom: 1rem;
+        }
+
+        .activity-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            background: #ff7675;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUpFade {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem auto;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .search-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GitHub Activity Viewer</h1>
+            <p>Enter a GitHub username to view their recent activity</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Enter GitHub username..." id="username-input">
+            <button class="search-button" id="search-button">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div class="error" id="error-message"></div>
+        
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-2x"></i>
+        </div>
+
+        <div class="activity-container" id="activity-container"></div>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username-input');
+        const searchButton = document.getElementById('search-button');
+        const activityContainer = document.getElementById('activity-container');
+        const loadingIndicator = document.getElementById('loading');
+        const errorMessage = document.getElementById('error-message');
+
+        // Event Listeners
+        searchButton.addEventListener('click', fetchActivity);
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchActivity();
+        });
+
+        async function fetchActivity() {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showError('Please enter a GitHub username');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+            activityContainer.innerHTML = '';
+
+            try {
+                const response = await fetch(`https://api.github.com/users/${username}/events`);
+                if (!response.ok) {
+                    throw new Error(response.status === 404 ? 'User not found' : 'Failed to fetch data');
+                }
+
+                const events = await response.json();
+                displayActivity(events);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayActivity(events) {
+            events.forEach((event, index) => {
+                const card = createActivityCard(event, index);
+                activityContainer.appendChild(card);
+            });
+        }
+
+        function createActivityCard(event, index) {
+            const card = document.createElement('div');
+            card.className = 'activity-card';
+            card.style.animationDelay = `${index * 0.1}s`;
+
+            const type = event.type.replace('Event', '');
+            const repo = event.repo.name;
+            const date = new Date(event.created_at).toLocaleDateString();
+
+            let details = '';
+            switch (event.type) {
+                case 'PushEvent':
+                    const commits = event.payload.commits || [];
+                    details = `Pushed ${commits.length} commit${commits.length === 1 ? '' : 's'}`;
+                    break;
+                case 'CreateEvent':
+                    details = `Created ${event.payload.ref_type}`;
+                    break;
+                case 'IssuesEvent':
+                    details = `${event.payload.action} issue #${event.payload.issue.number}`;
+                    break;
+                case 'WatchEvent':
+                    details = 'Starred repository';
+                    break;
+                default:
+                    details = type;
+            }
+
+            card.innerHTML = `
+                <div class="activity-type">${type}</div>
+                <div class="activity-details">${details}</div>
+                <div class="activity-meta">
+                    <i class="fas fa-code-branch"></i> ${repo}
+                    <br>
+                    <i class="fas fa-calendar"></i> ${date}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function showLoading(show) {
+            loadingIndicator.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

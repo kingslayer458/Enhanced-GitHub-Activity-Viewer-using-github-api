@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced GitHub Activity Viewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f5f6fa;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --card-bg: white;
+            --text: #2c3e50;
+            --border: #ddd;
+        }
+
+        [data-theme="dark"] {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #ecf0f1;
+            --light: #2c3e50;
+            --card-bg: #34495e;
+            --text: #ecf0f1;
+            --border: #4a5868;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="purple"] {
+            --primary: #9b59b6;
+            --secondary: #8e44ad;
+            --accent: #e056fd;
+            --dark: #2c2c54;
+            --light: #f1f2f6;
+            --card-bg: white;
+            --text: #2c2c54;
+            --border: #ddd;
+        }
+
+        [data-theme="green"] {
+            --primary: #27ae60;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f5f6fa;
+            --card-bg: white;
+            --text: #2c3e50;
+            --border: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Theme Selector */
+        .theme-selector {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            background: var(--card-bg);
+            padding: 0.5rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            border-color: var(--primary);
+        }
+
+        /* Profile Section */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+
+        .profile-info {
+            text-align: center;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+       
+
+     
+
+        /* Activity Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .date-range-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Activity Feed */
+        .activity-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .activity-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUpFade 0.5s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px var(--shadow);
+        }
+
+        /* Repository Section */
+        .repository-section {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .repository-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .repository-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px var(--shadow);
+        }
+
+       
+      
+        /* Utility Classes */
+        .button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .input {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--shadow);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUpFade {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .recent-searches {
+                display: none;
+            }
+
+            .theme-selector {
+                top: auto;
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+
+        /* Loading and Error States */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            background: var(--accent);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+        <button class="theme-btn active" data-theme="light" style="background: #f5f6fa;"></button>
+        <button class="theme-btn" data-theme="dark" style="background: #2c3e50;"></button>
+        <button class="theme-btn" data-theme="purple" style="background: #9b59b6;"></button>
+        <button class="theme-btn" data-theme="green" style="background: #27ae60;"></button>
+    </div>
+
+   
+
+    <div class="container">
+        <div class="header">
+            <h1>Enhanced GitHub Activity Viewer</h1>
+            <p>Track GitHub activity with advanced analytics and insights</p>
+        </div>
+
+        <!-- Search and Controls -->
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" class="input" id="username-input" placeholder="Enter GitHub username...">
+                <button class="button" id="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+
+            <div class="filter-container">
+                <button class="button" data-filter="all">All</button>
+                <button class="button" data-filter="push">Push</button>
+                <button class="button" data-filter="pr">PRs</button>
+                <button class="button" data-filter="issue">Issues</button>
+            </div>
+
+            <div class="date-range-container">
+                <input type="date" class="input" id="date-from">
+                <span>to</span>
+                <input type="date" class="input" id="date-to">
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section" id="profile-section" style="display: none;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="analytics-section" id="analytics-section" style="display: none;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="activity-container" id="activity-container">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Repository Section -->
+        <div class="repository-section" id="repository-section" style="display: none;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        // State Management
+        const state = {
+            user: null,
+            activities: [],
+            repositories: [],
+            recentSearches: JSON.parse(localStorage.getItem('recentSearches') || '[]'),
+            currentFilter: 'all',
+            dateRange: {
+                from: null,
+                to: null
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            usernameInput: document.getElementById('username-input'),
+            searchButton: document.getElementById('search-button'),
+            profileSection: document.getElementById('profile-section'),
+            analyticsSection: document.getElementById('analytics-section'),
+            activityContainer: document.getElementById('activity-container'),
+            repositorySection: document.getElementById('repository-section'),
+            loading: document.getElementById('loading'),
+            dateFrom: document.getElementById('date-from'),
+            dateTo: document.getElementById('date-to'),
+            recentSearchesList: document.getElementById('recent-searches-list')
+        };
+// Previous HTML and CSS remains the same, continuing with the JavaScript:
+
+        // Theme Management
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.body.dataset.theme = btn.dataset.theme;
+                themeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                localStorage.setItem('preferredTheme', btn.dataset.theme);
+            });
+        });
+
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('preferredTheme');
+        if (savedTheme) {
+            document.body.dataset.theme = savedTheme;
+            themeButtons.forEach(btn => {
+                if (btn.dataset.theme === savedTheme) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // API Functions
+        async function fetchUserData(username) {
+            const response = await fetch(`https://api.github.com/users/${username}`);
+            if (!response.ok) throw new Error('User not found');
+            return response.json();
+        }
+
+        async function fetchUserActivities(username) {
+            const response = await fetch(`https://api.github.com/users/${username}/events`);
+            if (!response.ok) throw new Error('Failed to fetch activities');
+            return response.json();
+        }
+
+        async function fetchUserRepositories(username) {
+            const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated`);
+            if (!response.ok) throw new Error('Failed to fetch repositories');
+            return response.json();
+        }
+
+        // User Profile Functions
+        function renderUserProfile(userData) {
+            const html = `
+                <div class="profile-card">
+                    <img src="${userData.avatar_url}" alt="${userData.login}" class="profile-avatar">
+                    <div class="profile-info">
+                        <h2>${userData.name || userData.login}</h2>
+                        <p>${userData.bio || 'No bio available'}</p>
+                        <div class="profile-stats">
+                            <div class="stat-card">
+                                <h3>${userData.followers}</h3>
+                                <p>Followers</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${userData.following}</h3>
+                                <p>Following</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${userData.public_repos}</h3>
+                                <p>Repositories</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${new Date(userData.created_at).getFullYear()}</h3>
+                                <p>Joined</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            elements.profileSection.innerHTML = html;
+            elements.profileSection.style.display = 'block';
+        }
+
+        // Update the analytics rendering function:
+
+        function renderAnalytics(activities) {
+            const eventTypes = activities.reduce((acc, event) => {
+                acc[event.type] = (acc[event.type] || 0) + 1;
+                return acc;
+            }, {});
+
+            const timeData = activities.reduce((acc, event) => {
+                const hour = new Date(event.created_at).getHours();
+                acc[hour] = (acc[hour] || 0) + 1;
+                return acc;
+            }, {});
+
+            const html = `
+                <div class="chart-card">
+                    <h3>Activity Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="eventTypesChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Activity Timeline</h3>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            `;
+            elements.analyticsSection.innerHTML = html;
+            elements.analyticsSection.style.display = 'block';
+
+            createEventTypesChart(eventTypes);
+            createTimelineChart(timeData);
+        }
+
+        function createEventTypesChart(data) {
+            const ctx = document.getElementById('eventTypesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data).map(type => type.replace('Event', '')),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#3498db',
+                            '#2ecc71',
+                            '#e74c3c',
+                            '#f1c40f',
+                            '#9b59b6',
+                            '#e67e22'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTimelineChart(data) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data).map(hour => `${hour}:00`),
+                    datasets: [{
+                        label: 'Activities',
+                        data: Object.values(data),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+
+        // Activity Feed Functions
+        function renderActivities(activities) {
+            const filteredActivities = filterActivities(activities);
+            const html = filteredActivities.map((activity, index) => createActivityCard(activity, index)).join('');
+            elements.activityContainer.innerHTML = html;
+        }
+
+        function filterActivities(activities) {
+            let filtered = [...activities];
+            
+            // Apply date filter
+            if (state.dateRange.from) {
+                filtered = filtered.filter(activity => 
+                    new Date(activity.created_at) >= new Date(state.dateRange.from)
+                );
+            }
+            if (state.dateRange.to) {
+                filtered = filtered.filter(activity => 
+                    new Date(activity.created_at) <= new Date(state.dateRange.to)
+                );
+            }
+
+            // Apply type filter
+            if (state.currentFilter !== 'all') {
+                filtered = filtered.filter(activity => 
+                    activity.type.toLowerCase().includes(state.currentFilter)
+                );
+            }
+
+            return filtered;
+        }
+
+        function createActivityCard(activity, index) {
+            const date = new Date(activity.created_at).toLocaleDateString();
+            const type = activity.type.replace('Event', '');
+            const details = getActivityDetails(activity);
+            
+            return `
+                <div class="activity-card" style="animation-delay: ${index * 0.1}s">
+                    <div class="activity-type">${type}</div>
+                    <div class="activity-details">${details}</div>
+                    <div class="activity-meta">
+                        <span><i class="fas fa-clock"></i> ${date}</span>
+                        <span><i class="fas fa-code-branch"></i> ${activity.repo.name}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getActivityDetails(activity) {
+            switch (activity.type) {
+                case 'PushEvent':
+                    const commits = activity.payload.commits || [];
+                    return `Pushed ${commits.length} commit(s)`;
+                case 'PullRequestEvent':
+                    return `${activity.payload.action} pull request #${activity.payload.number}`;
+                case 'IssuesEvent':
+                    return `${activity.payload.action} issue #${activity.payload.issue.number}`;
+                case 'CreateEvent':
+                    return `Created ${activity.payload.ref_type}`;
+                default:
+                    return 'Performed action';
+            }
+        }
+
+        // Repository Functions
+        function renderRepositories(repositories) {
+            const html = repositories.slice(0, 6).map(repo => `
+                <div class="repository-card">
+                    <h3>${repo.name}</h3>
+                    <p>${repo.description || 'No description available'}</p>
+                    <div class="repository-stats">
+                        <span><i class="fas fa-star"></i> ${repo.stargazers_count}</span>
+                        <span><i class="fas fa-code-branch"></i> ${repo.forks_count}</span>
+                    </div>
+                    <div class="repository-language">
+                        <span class="language-dot" style="background-color: ${getLanguageColor(repo.language)}"></span>
+                        ${repo.language || 'Unknown'}
+                    </div>
+                </div>
+            `).join('');
+            elements.repositorySection.innerHTML = html;
+            elements.repositorySection.style.display = 'block';
+        }
+
+
+
+        // Main Search Function
+        async function searchUser(username) {
+            try {
+                elements.loading.style.display = 'block';
+                
+                const [userData, activities, repositories] = await Promise.all([
+                    fetchUserData(username),
+                    fetchUserActivities(username),
+                    fetchUserRepositories(username)
+                ]);
+
+                state.user = userData;
+                state.activities = activities;
+                state.repositories = repositories;
+
+                renderUserProfile(userData);
+                renderAnalytics(activities);
+                renderActivities(activities);
+                renderRepositories(repositories);
+                updateRecentSearches(username);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                elements.loading.style.display = 'none';
+            }
+        }
+
+        // Event Listeners
+        elements.searchButton.addEventListener('click', () => {
+            const username = elements.usernameInput.value.trim();
+            if (username) {
+                searchUser(username);
+            }
+        });
+
+        elements.usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const username = elements.usernameInput.value.trim();
+                if (username) {
+                    searchUser(username);
+                }
+            }
+        });
+
+        elements.dateFrom.addEventListener('change', () => {
+            state.dateRange.from = elements.dateFrom.value;
+            renderActivities(state.activities);
+        });
+
+        elements.dateTo.addEventListener('change', () => {
+            state.dateRange.to = elements.dateTo.value;
+            renderActivities(state.activities);
+        });
+
+        document.querySelector('.filter-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('button')) {
+                state.currentFilter = e.target.dataset.filter;
+                renderActivities(state.activities);
+            }
+        });
+
+        // Initialize
+        renderRecentSearches();
+    </script>
+</body>
+</html>        
