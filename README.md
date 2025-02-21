@@ -7,40 +7,8 @@ Click the link below to explore the project:
 ➡️ [Enhanced-GitHub-Activity-Viewer](https://kingslayer458.github.io/Enhanced-GitHub-Activity-Viewer-using-github-api/)
 
 
-# Enhanced GitHub Activity Viewer 🚀
-
-<div align="center">
-
-![GitHub Activity Viewer Banner](https://github.com/yourusername/github-activity-viewer/raw/main/assets/banner.gif)
-
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/github-activity-viewer?style=for-the-badge&color=yellow)](https://github.com/yourusername/github-activity-viewer/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/yourusername/github-activity-viewer?style=for-the-badge&color=blue)](https://github.com/yourusername/github-activity-viewer/network/members)
-[![GitHub Issues](https://img.shields.io/github/issues/yourusername/github-activity-viewer?style=for-the-badge&color=red)](https://github.com/yourusername/github-activity-viewer/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/yourusername/github-activity-viewer?style=for-the-badge&color=green)](https://github.com/yourusername/github-activity-viewer/pulls)
-[![License](https://img.shields.io/github/license/yourusername/github-activity-viewer?style=for-the-badge)](LICENSE)
-
-### A stunning, interactive GitHub activity visualization tool with real-time analytics and beautiful themes 🎨
-
-[View Demo](https://your-demo-link.com) · [Report Bug](https://github.com/yourusername/github-activity-viewer/issues) · [Request Feature](https://github.com/yourusername/github-activity-viewer/issues)
-
 </div>
 
-## ✨ Features
-
-<div align="center">
-<table>
-<tr>
-<td align="center">🎯 Real-time Activity Tracking</td>
-<td align="center">📊 Interactive Analytics</td>
-<td align="center">🎨 Multiple Themes</td>
-</tr>
-<tr>
-<td align="center">🔍 Advanced Filtering</td>
-<td align="center">📱 Responsive Design</td>
-<td align="center">⚡ Lightning Fast</td>
-</tr>
-</table>
-</div>
 
 ## 🌟 Preview
 
@@ -118,14 +86,6 @@ Choose from our stunning themes:
 - GitHub API
 - Font Awesome Icons
 
-## 📊 Performance
-
-| Metric | Score |
-|--------|-------|
-| Lighthouse Performance | 98/100 |
-| Lighthouse Accessibility | 100/100 |
-| Lighthouse Best Practices | 100/100 |
-| Lighthouse SEO | 100/100 |
 
 ## 🤝 Contributing
 
@@ -145,13 +105,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - [Font Awesome](https://fontawesome.com/)
 - [GitHub API](https://docs.github.com/en/rest)
 
-## 📫 Contact
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - email@example.com
-
-Project Link: [https://github.com/yourusername/github-activity-viewer](https://github.com/yourusername/github-activity-viewer)
-
----
 
 <div align="center">
 ⭐ Star this project if you find it useful!
