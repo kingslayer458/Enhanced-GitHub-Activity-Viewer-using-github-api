@@ -55,27 +55,6 @@ Choose from our stunning themes:
 - 🟣 Purple Dream
 - 🟢 Forest Green
 
-## 🔥 Key Features Breakdown
-
-### Real-time Activity Tracking
-- Live updates of GitHub events
-- Comprehensive activity timeline
-- Detailed event information
-
-### Interactive Analytics
-- Activity distribution charts
-- Time-based analysis
-- Repository statistics
-
-### Advanced Filtering
-- Date range selection
-- Event type filtering
-- Smart search functionality
-
-### Responsive Design
-- Mobile-first approach
-- Seamless tablet experience
-- Desktop optimization
 
 ## 🛠️ Built With
 
