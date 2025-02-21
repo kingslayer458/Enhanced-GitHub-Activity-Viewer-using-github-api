@@ -89,5 +89,3 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <div align="center">
 ⭐ Star this project if you find it useful!
 
-[Back to Top](#enhanced-github-activity-viewer-)
-</div>
